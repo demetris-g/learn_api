@@ -1,7 +1,7 @@
 from flask import Flask, request as flask_request
 from requests import request
 from time import sleep
-from app.mongo_controller import insert_user, clear_collection, insert_details_in_db
+from app.mongo_controller import insert_user, clear_collection, insert_details_in_db, check_mongo_connection
 from pprint import pprint
 from app.validate import validate_details
 
@@ -42,10 +42,11 @@ def post_json():
             insert_details_in_db(content)
             return 'Thank you for submitting your details'
         else:
-            return 'Check again your details'
+            return 'Not valid details!'
     except Exception as e:
         return e
 
 
 if __name__ == '__main__':
+    check_mongo_connection()
     app.run(host='0.0.0.0', port="1453")

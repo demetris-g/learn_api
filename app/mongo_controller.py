@@ -1,8 +1,15 @@
 from pymongo import MongoClient
 
-client = MongoClient('localhost', 27017)
+client = MongoClient('localhost', 27017, serverSelectionTimeoutMS=2)
 db = client["learn_api"]
 users_collection = db["users"]
+
+
+def check_mongo_connection():
+    if client.server_info():
+        return print("Mongo is connected on {}".format(client))
+    else:
+        return print("not connected"), exit()
 
 
 def insert_user(name: str):
@@ -20,11 +27,8 @@ def insert_user(name: str):
 
 def insert_details_in_db(details: dict):
     try:
-
         inserted_details = users_collection.insert_one(details)
-
-        return print("The details: '{}' were added in mongo with id: {}".format(name, inserted_details.inserted_id))
-
+        return "The details: '{}' were added in mongo with id: {}".format(name, inserted_details.inserted_id)
     except Exception as e:
         return e
 

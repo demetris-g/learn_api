@@ -1,6 +1,7 @@
 import json
 from pydantic import BaseModel, ValidationError, validator
 from re import match
+from .mongo_controller import users_collection
 
 
 class UserDetails(BaseModel):
@@ -23,6 +24,12 @@ class UserDetails(BaseModel):
         if ' ' in valid_username or len(valid_username) not in range(6, 30):
             raise ValueError(
                 'Try another username!\n  Must be 6-30 characters and do not include space')
+
+        duplicate_name = users_collection.find(
+            {"username": valid_username}).count()
+        if duplicate_name > 0:
+            raise ValueError("Username already exists!")
+
         return valid_username
 
     @validator('password')
@@ -47,7 +54,6 @@ def validate_details(details: dict):
             password=details['password'],
             confirm_password=details['confirm_password']
         )
-        print('Valid details!')
         return True
     except ValidationError as e:
         print(e)
