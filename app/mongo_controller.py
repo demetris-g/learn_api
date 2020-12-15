@@ -1,5 +1,9 @@
 from pymongo import MongoClient
 import json
+from dotenv import load_dotenv
+load_dotenv()
+
+
 client = MongoClient('localhost', 27017, serverSelectionTimeoutMS=2)
 db = client["learn_api"]
 users_collection = db["users"]

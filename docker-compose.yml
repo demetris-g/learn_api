@@ -6,8 +6,18 @@ services:
     image: 'docker.io/bitnami/mongodb:4.4-debian-10'
     ports:
       - "27017:27017"
+    expose:
+      - "27017"
     volumes:
       - 'mongodb_data:/bitnami/mongodb'
+  
+  api-service:
+    container_name: api-service
+    image: 'learn_api_v2'
+    ports:
+      - "8000:80"
+
+
 
 volumes:
   mongodb_data:
