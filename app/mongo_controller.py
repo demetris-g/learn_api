@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-
+import json
 client = MongoClient('localhost', 27017, serverSelectionTimeoutMS=2)
 db = client["learn_api"]
 users_collection = db["users"]
@@ -7,28 +7,17 @@ users_collection = db["users"]
 
 def check_mongo_connection():
     if client.server_info():
-        return print("Mongo is connected on {}".format(client))
+        return True
     else:
-        return print("not connected"), exit()
+        return False
 
 
-def insert_user(name: str):
+def insert_details_in_db(details):
     try:
-        document = {
-            "name": name
-        }
-        inserted_name = users_collection.insert_one(document)
-
-        return print("The name: '{}' was added in mongo with id: {}".format(name, inserted_name.inserted_id))
-
-    except Exception as e:
-        return e
-
-
-def insert_details_in_db(details: dict):
-    try:
-        inserted_details = users_collection.insert_one(details)
-        return "The details: '{}' were added in mongo with id: {}".format(name, inserted_details.inserted_id)
+        print(details)
+        users_collection.insert(dict(details))
+        # users_collection.insert_one(details)
+        return True
     except Exception as e:
         return e
 
@@ -38,5 +27,25 @@ def clear_collection(collection: str):
         cleared_collection = db[collection].drop()
         return print("'{}' collection dropped".format(collection))
 
+    except Exception as e:
+        return e
+
+def get_details_from_collection(username: str):
+
+    fetched_details = users_collection.find_one({"username": username}, {'_id': 0})  ####{'_id': 0} Excludes ObjectId
+    if fetched_details == None:
+        fetched_details = "Username does not exist"
+    return fetched_details
+    
+def delete_details_from_collection(username: str):
+    try:
+        counter = users_collection.find({"username": username}).count()
+        print(counter)
+        if counter > 0:
+            deleted_details = users_collection.remove({"username": username})
+            response = {username: "Removed!"}
+        else:
+            response = {"Username does not exists!"}
+        return response
     except Exception as e:
         return e

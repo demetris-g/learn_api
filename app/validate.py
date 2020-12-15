@@ -2,13 +2,13 @@ import json
 from pydantic import BaseModel, ValidationError, validator
 from re import match
 from .mongo_controller import users_collection
-
+from typing import Optional
 
 class UserDetails(BaseModel):
     full_name: str
     username: str
-    # email: str = None  # None means Optional
-    # telno: int = None
+    email: Optional[str] = None  
+    telno: Optional[str] = None
     password: str
     confirm_password: str
 
@@ -31,6 +31,12 @@ class UserDetails(BaseModel):
             raise ValueError("Username already exists!")
 
         return valid_username
+    
+    @validator('email')
+    def validate_email(cls, valid_email):
+        if not match('^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$', valid_email):
+            raise ValueError("Not a valid email address")
+        return valid_email
 
     @validator('password')
     def validate_password(cls, valid_password):

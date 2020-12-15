@@ -1,29 +1,21 @@
-from flask import Flask, request as flask_request
-from requests import request
-from time import sleep
-from app.mongo_controller import insert_user, clear_collection, insert_details_in_db, check_mongo_connection
+from app.mongo_controller import clear_collection, insert_details_in_db, check_mongo_connection, get_details_from_collection, delete_details_from_collection
 from pprint import pprint
-from app.validate import validate_details
+from app.validate import validate_details, UserDetails
+from fastapi import FastAPI
 
-app = Flask(__name__)
-
-
-@app.route('/')
-def documentation():
-    return "here you will find nothing! Sorry :)\n"
+#FastApi
+app = FastAPI()
 
 
-@app.route('/name/<name>')
-def hello(name: str):
+@app.get('/')
+def check_db_connection():
     try:
-        insert_user(name)
-        return "Hello {}!\n Adding the name in the database!".format(name)
+        check_mongo_connection()
+        return {"Connected"}
+    except:
+        return {"Check database connection"}
 
-    except Exception as e:
-        return e
-
-
-@app.route('/empty/<collection>')
+@app.delete('/collection/delete')
 def empty_collection(collection: str):
     try:
         clear_collection(collection)
@@ -31,22 +23,29 @@ def empty_collection(collection: str):
     except Exception as e:
         return e
 
-
-@app.route('/insert/details', methods=['POST'])
-def post_json():
+@app.post('/details/insert')
+def post_details(details: UserDetails):
     try:
-        print(flask_request.is_json)
-        content = dict(flask_request.get_json())
-        pprint(content)
-        if validate_details(content):
-            insert_details_in_db(content)
-            return 'Thank you for submitting your details'
-        else:
-            return 'Not valid details!'
+        print(details)
+        insert_details_in_db(details)
+        return {'Thank you for submitting your details'}
     except Exception as e:
         return e
 
+@app.get('/details/get')
+def get_details(username: str):
+    try:
+        response =  get_details_from_collection(username)
+        pprint(response)
+        return response
+    except Exception as e:
+        return e
 
-if __name__ == '__main__':
-    check_mongo_connection()
-    app.run(host='0.0.0.0', port="1453")
+@app.delete('/details/delete')
+def delete_details(username: str):
+    try:
+        response =  delete_details_from_collection(username)
+        pprint(response)
+        return response
+    except Exception as e:
+        return e
